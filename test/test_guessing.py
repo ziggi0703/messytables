@@ -132,3 +132,27 @@ class TypeGuessTest(unittest.TestCase):
             StringType(), StringType(), StringType(), StringType(),
             StringType(), StringType(), IntegerType(), StringType(),
             StringType()])
+
+    def test_type_guess_user_specified_types(self):
+        """
+        Test type guess for the case, that the user specifies which types shall be used,
+        especially, which DateType format should be checked for.
+
+        If a date string is not in the specified format, it should not be interpreted as DateType but as StringType.
+        """
+        csv_file = StringIO.StringIO('''
+            1,   2012/2/12, 2,   02 October 2011,  yes,   1, 2014-09-18
+            2,   2012/2/12, 2,   02 October 2011,  true,  1, 2014-09-18
+            2.4, 2012/2/12, 1,   1 May 2011,       no,    0, 2014-09-18
+            foo, bar,       1000, ,                false, 0, no date
+            4.3, ,          42,  24 October 2012,,, 2014-09-18
+             ,   2012/2/12, 21,  24 December 2013, true,  1,''')
+        row_set = CSVTableSet(csv_file).tables[0]
+
+        user_types = [BoolType, DecimalType, IntegerType, StringType, DateType('%Y-%m-%d')]
+
+        guessed_types = type_guess(row_set, types=user_types)
+        expected_guesses = [DecimalType(), StringType(), IntegerType(), StringType(),
+                            BoolType(), BoolType(), DateType('%Y-%m-%d')]
+
+        self.assertListEqual(guessed_types, expected_guesses)
