@@ -142,7 +142,6 @@ class DateType(CellType):
         if format is not None:
             if format in self.formats:
                 self.formats = [format]
-                print self.formats
             else:
                 raise ValueError('Given format %s is not valid' % format)
         self.format = format
