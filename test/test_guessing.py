@@ -4,7 +4,7 @@ import StringIO
 
 from . import horror_fobj
 from nose.plugins.attrib import attr
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_list_equal, assert_raises
 from messytables import (CSVTableSet, type_guess, headers_guess,
                          offset_processor, DateType, StringType,
                          DecimalType, IntegerType,
@@ -154,5 +154,4 @@ class TypeGuessTest(unittest.TestCase):
         guessed_types = type_guess(row_set, types=user_types)
         expected_guesses = [DecimalType(), StringType(), IntegerType(), StringType(),
                             BoolType(), BoolType(), DateType('%Y-%m-%d')]
-
-        self.assertListEqual(guessed_types, expected_guesses)
+        assert_list_equal(guessed_types, expected_guesses)
