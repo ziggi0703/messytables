@@ -138,6 +138,7 @@ class DateType(CellType):
     format = None
 
     def __init__(self, format):
+        # check if the given format is valid. If not a exception is thrown
         if format is not None:
             if format in self.formats:
                 self.formats = [format]
@@ -146,14 +147,13 @@ class DateType(CellType):
                 raise ValueError('Given format %s is not valid' % format)
         self.format = format
 
-
     @classmethod
     def instances(cls, format=None):
+        # if a format is specified only the instance with this format is returned
         if format is not None:
             return [cls(format)]
         else:
             return [cls(v) for v in cls.formats]
-
 
     def test(self, value):
         if isinstance(value, basestring) and not is_date(value):
@@ -200,12 +200,22 @@ TYPES = [StringType, DecimalType, IntegerType, DateType, BoolType]
 
 
 def get_type_instances(types):
+    """
+    Loads all possible instances for a list of types.
+    New: If the user specifies a format of the DateType, only this instance is used.
+
+    :param types: Contains types
+    :type types: list
+
+    :return type_instances: List with all possible instances
+    :rtype type_instances: list
+    """
     type_instances = []
-    for type in types:
-        if isinstance(type, DateType):
-            type_instances.extend([i for i in type.instances(type.format)])
+    for date_type in types:
+        if isinstance(date_type, DateType):
+            type_instances.extend([i for i in date_type.instances(date_type.format)])
         else:
-            type_instances.extend([i for i in type.instances()])
+            type_instances.extend([i for i in date_type.instances()])
 
     return type_instances
 
