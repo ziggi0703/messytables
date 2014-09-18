@@ -135,13 +135,25 @@ class DateType(CellType):
     guessing_weight = 3
     formats = DATE_FORMATS
     result_type = datetime.datetime
+    format = None
 
     def __init__(self, format):
+        if format is not None:
+            if format in self.formats:
+                self.formats = [format]
+                print self.formats
+            else:
+                raise ValueError('Given format %s is not valid' % format)
         self.format = format
 
+
     @classmethod
-    def instances(cls):
-        return [cls(v) for v in cls.formats]
+    def instances(cls, format=None):
+        if format is not None:
+            return [cls(format)]
+        else:
+            return [cls(v) for v in cls.formats]
+
 
     def test(self, value):
         if isinstance(value, basestring) and not is_date(value):
@@ -187,6 +199,17 @@ class DateUtilType(CellType):
 TYPES = [StringType, DecimalType, IntegerType, DateType, BoolType]
 
 
+def get_type_instances(types):
+    type_instances = []
+    for type in types:
+        if isinstance(type, DateType):
+            type_instances.extend([i for i in type.instances(type.format)])
+        else:
+            type_instances.extend([i for i in type.instances()])
+
+    return type_instances
+
+
 def type_guess(rows, types=TYPES, strict=False):
     """ The type guesser aggregates the number of successful
     conversions of each column to each type, weights them by a
@@ -197,7 +220,9 @@ def type_guess(rows, types=TYPES, strict=False):
     Strict means that a type will not be guessed
     if parsing fails for a single cell in the column."""
     guesses = []
-    type_instances = [i for t in types for i in t.instances()]
+
+    type_instances = get_type_instances(types)
+
     if strict:
         at_least_one_value = []
         for ri, row in enumerate(rows):
@@ -250,7 +275,7 @@ def type_guess(rows, types=TYPES, strict=False):
     return _columns
 
 
-def types_processor(types, strict=False):
+def types_processor(types, strict=False, on_error=None):
     """ Apply the column types set on the instance to the
     current row, attempting to cast each cell to the specified
     type.
@@ -266,5 +291,7 @@ def types_processor(types, strict=False):
             except:
                 if strict and type:
                     raise
+                elif on_error is not None:
+                    on_error(cell, type)
         return row
     return apply_types
