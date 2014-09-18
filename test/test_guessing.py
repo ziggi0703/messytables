@@ -155,3 +155,19 @@ class TypeGuessTest(unittest.TestCase):
         expected_guesses = [DecimalType(), StringType(), IntegerType(), StringType(),
                             BoolType(), BoolType(), DateType('%Y-%m-%d')]
         assert_list_equal(guessed_types, expected_guesses)
+                
+    def test_type_guess_max_rows(self):
+        """
+        Test type guess if user specifies number of rows used for guessing. This is only used if
+        not strict.
+        """
+        csv_file = StringIO.StringIO('''
+            1,   2012/2/12, 2,   02 October 2011,  yes,   1, 2014-09-18
+            2,   2012/2/12, 2,   02 October 2011,  true,  1, 2014-09-18
+            2.4, 2012/2/12, 1,   1 May 2011,       no,    0, 2014-09-18
+            foo, bar,       1000, ,                false, 0, no date
+            4.3, ,          42,  24 October 2012,,, 2014-09-18
+             ,   2012/2/12, 21,  24 December 2013, true,  1,''')
+        row_set = CSVTableSet(csv_file).tables[0]
+
+        assert_raises(ValueError, type_guess, row_set, max_rows=3)

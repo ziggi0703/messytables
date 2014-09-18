@@ -219,7 +219,7 @@ def get_type_instances(types):
     return type_instances
 
 
-def type_guess(rows, types=TYPES, strict=False):
+def type_guess(rows, types=TYPES, strict=False, max_rows=1000):
     """ The type guesser aggregates the number of successful
     conversions of each column to each type, weights them by a
     fixed type priority and select the most probable type for
@@ -227,10 +227,17 @@ def type_guess(rows, types=TYPES, strict=False):
     ``CellType``. Empty cells are ignored.
 
     Strict means that a type will not be guessed
-    if parsing fails for a single cell in the column."""
+    if parsing fails for a single cell in the column.
+
+    If strict is false, max_rows is the number of rows used for guessing
+    column types (minimum is 10). If max_rows < 10, raise ValueError.
+    """
     guesses = []
 
     type_instances = get_type_instances(types)
+
+    if not strict and max_rows < 10:
+        raise ValueError('max_rows must be at least 10. Given value %d to small.' % max_rows)
 
     if strict:
         at_least_one_value = []
@@ -260,7 +267,9 @@ def type_guess(rows, types=TYPES, strict=False):
             if not v:
                 guesses[i] = {StringType(): 0}
     else:
-        for i, row in enumerate(rows):
+        for ri, row in enumerate(rows):
+            if ri >= max_rows:
+                break
             diff = len(row) - len(guesses)
             for _ in xrange(diff):
                 guesses.append(defaultdict(int))
