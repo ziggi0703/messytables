@@ -210,11 +210,11 @@ def get_type_instances(types):
     :rtype type_instances: list
     """
     type_instances = []
-    for date_type in types:
-        if isinstance(date_type, DateType):
-            type_instances.extend([i for i in date_type.instances(date_type.format)])
+    for dtype in types:
+        if isinstance(dtype, DateType):
+            type_instances.extend([i for i in dtype.instances(dtype.format)])
         else:
-            type_instances.extend([i for i in date_type.instances()])
+            type_instances.extend([i for i in dtype.instances()])
 
     return type_instances
 
@@ -293,7 +293,7 @@ def type_guess(rows, types=TYPES, strict=False, max_rows=1000):
     return _columns
 
 
-def types_processor(types, strict=False, on_error=None):
+def types_processor(types, strict=False, on_error=None, **kwargs):
     """ Apply the column types set on the instance to the
     current row, attempting to cast each cell to the specified
     type.
@@ -310,6 +310,6 @@ def types_processor(types, strict=False, on_error=None):
                 if strict and type:
                     raise
                 elif on_error is not None:
-                    on_error(cell, type)
+                    on_error(cell, type, kwargs)
         return row
     return apply_types
