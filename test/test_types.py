@@ -1,4 +1,4 @@
-# -*- coding: <encoding name> -*-
+# -*- coding: utf-8 -*-
 from unittest import TestCase
 
 from nose.tools import assert_raises
