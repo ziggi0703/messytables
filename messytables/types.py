@@ -302,7 +302,7 @@ def types_processor(types, strict=False, on_error=None, **kwargs):
     def apply_types(row_set, row):
         if types is None:
             return row
-        for cell, type in izip_longest(row, types):
+        for cell_index, (cell, type) in enumerate(izip_longest(row, types)):
             try:
                 cell.value = type.cast(cell.value)
                 cell.type = type
@@ -310,6 +310,6 @@ def types_processor(types, strict=False, on_error=None, **kwargs):
                 if strict and type:
                     raise
                 elif on_error is not None:
-                    on_error(cell, type, kwargs)
+                    on_error(cell_index, cell, type, kwargs)
         return row
     return apply_types
